@@ -118,7 +118,7 @@ const YerevanStreetGame = () => {
     if (selectedLevel && selectedMode) {
       initializeGame();
     }
-  }, [initializeGame, selectedLevel, selectedMode, streetCount]);
+  }, [selectedLevel, selectedMode, streetCount]);
 
   const initializeGame = () => {
     setScore(0);
