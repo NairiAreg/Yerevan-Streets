@@ -16,7 +16,6 @@ import {
 } from "@chakra-ui/react";
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Polyline,
   useMap,
@@ -119,7 +118,7 @@ const YerevanStreetGame = () => {
     if (selectedLevel && selectedMode) {
       initializeGame();
     }
-  }, [selectedLevel, selectedMode, streetCount]);
+  }, [initializeGame, selectedLevel, selectedMode, streetCount]);
 
   const initializeGame = () => {
     setScore(0);
