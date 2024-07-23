@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 10,
+            "activePatchIndex": 13,
             "patches": [
                 {
                     "date": 1721744966700,
@@ -48,6 +48,18 @@
                 {
                     "date": 1721747018762,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -117,9 +117,9 @@\n   useEffect(() => {\n     if (selectedLevel && selectedMode) {\n       initializeGame();\n     }\n-  }, [initializeGame, selectedLevel, selectedMode, streetCount]);\n+  }, [selectedLevel, selectedMode, streetCount]);\n \n   const initializeGame = () => {\n     setScore(0);\n     setGameStats(null);\n"
+                },
+                {
+                    "date": 1721748585302,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -91,9 +91,10 @@\n     } else if (selectedLevel === \"xcho\") {\n       streetList = streets.filter(({ name }) =>\n         xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n-    } else if (selectedLevel === \"alik\") {\n+    } \n+    else if (selectedLevel === \"alik\") {\n       streetList = streets.filter(({ name }) =>\n         alik.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n     }\n"
+                },
+                {
+                    "date": 1721748591687,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -91,9 +91,9 @@\n     } else if (selectedLevel === \"xcho\") {\n       streetList = streets.filter(({ name }) =>\n         xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n-    } else if (selectedLevel === \"i\") {\n+    } else if (selectedLevel === \"ir\") {\n       streetList = streets.filter(({ name }) =>\n         xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n     } else if (selectedLevel === \"alik\") {\n"
+                },
+                {
+                    "date": 1721748627430,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -93,9 +93,9 @@\n         xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n     } else if (selectedLevel === \"irenchik\") {\n       streetList = streets.filter(({ name }) =>\n-        xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n+        i.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n       );\n     } else if (selectedLevel === \"alik\") {\n       streetList = streets.filter(({ name }) =>\n         alik.map((e) => e.toLowerCase()).includes(name.toLowerCase())\n"
                 }
             ],
             "date": 1721744966700,

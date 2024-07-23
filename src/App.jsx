@@ -28,6 +28,7 @@ import streets from "./yerevan_streets.json";
 import easy from "./easy.json";
 import xcho from "./xcho.json";
 import alik from "./alik.json";
+import irenchik from "./irenchik.json";
 import LevelSelection from "./LevelSelection";
 import GameModeSelection from "./GameModeSelection";
 
@@ -91,6 +92,10 @@ const YerevanStreetGame = () => {
     } else if (selectedLevel === "xcho") {
       streetList = streets.filter(({ name }) =>
         xcho.map((e) => e.toLowerCase()).includes(name.toLowerCase())
+      );
+    } else if (selectedLevel === "irenchik") {
+      streetList = streets.filter(({ name }) =>
+        irenchik.map((e) => e.toLowerCase()).includes(name.toLowerCase())
       );
     } else if (selectedLevel === "alik") {
       streetList = streets.filter(({ name }) =>

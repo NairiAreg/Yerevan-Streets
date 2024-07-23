@@ -28,6 +28,7 @@ const LevelSelection = ({ onSelectLevel, selectedLevel }) => {
   const bg = useColorModeValue("gray.100", "gray.700");
 
   const levels = [
+    { name: "Irenchik", description: "Irenchik-friendly streets", color: "pink" },
     { name: "Easy", description: "Beginner-friendly streets", color: "green" },
     { name: "Alik", description: "Intermediate difficulty", color: "yellow" },
     { name: "Xcho", description: "Advanced challenge", color: "orange" },
