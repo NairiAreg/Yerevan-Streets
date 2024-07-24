@@ -82,6 +82,7 @@ const YerevanStreetGame = () => {
   const [isToastActive, setIsToastActive] = useState(false);
   const toast = useToast();
   const mapRef = useRef(null);
+  const [showCorrectStreet, setShowCorrectStreet] = useState(false);
 
   const filteredStreets = useMemo(() => {
     let streetList = streets;
@@ -167,6 +168,10 @@ const YerevanStreetGame = () => {
 
     setStreetColor(clickedStreet.name, isCorrect ? "green" : "red");
 
+    if (!isCorrect && showCorrectStreet) {
+      setStreetColor(currentStreet.name, "green");
+    }
+
     setIsToastActive(true);
 
     if (isCorrect) {
@@ -190,40 +195,54 @@ const YerevanStreetGame = () => {
             } else {
               endGame();
             }
-          } else if (selectedMode === "challenge") {
-            const updatedStreets = remainingStreets.filter(
-              (street) => street.name !== currentStreet.name
-            );
-            setRemainingStreets(updatedStreets);
-            if (updatedStreets.length > 0) {
-              selectNewStreet(updatedStreets);
-            } else {
-              endGame();
-            }
           } else {
-            selectNewStreet(filteredStreets);
+            setStreetColor(currentStreet.name, "blue");
+            if (selectedMode === "challenge") {
+              const updatedStreets = remainingStreets.filter(
+                (street) => street.name !== currentStreet.name
+              );
+              setRemainingStreets(updatedStreets);
+              if (updatedStreets.length > 0) {
+                selectNewStreet(updatedStreets);
+              } else {
+                endGame();
+              }
+            } else {
+              selectNewStreet(filteredStreets);
+            }
           }
         },
       });
     } else {
       toast({
         title: "Incorrect",
-        description: `That's ${clickedStreet.name}. The correct street is ${currentStreet.name}. Try again!`,
+        description: `That's ${clickedStreet.name}. The correct street is ${
+          currentStreet.name
+        }. ${
+          showCorrectStreet ? "The correct street is highlighted in green." : ""
+        }`,
         status: "error",
         duration: null,
         isClosable: true,
         onCloseComplete: () => {
           setIsToastActive(false);
           setStreetColor(clickedStreet.name, "blue");
-          if (selectedMode === "challenge") {
-            const updatedStreets = remainingStreets.filter(
-              (street) => street.name !== currentStreet.name
-            );
-            setRemainingStreets(updatedStreets);
-            if (updatedStreets.length > 0) {
-              selectNewStreet(updatedStreets);
+          if (selectedMode === "elimination") {
+            setStreetColor(currentStreet.name, "blue");
+          } else {
+            setStreetColor(currentStreet.name, "blue");
+            if (selectedMode === "challenge") {
+              const updatedStreets = remainingStreets.filter(
+                (street) => street.name !== currentStreet.name
+              );
+              setRemainingStreets(updatedStreets);
+              if (updatedStreets.length > 0) {
+                selectNewStreet(updatedStreets);
+              } else {
+                endGame();
+              }
             } else {
-              endGame();
+              selectNewStreet(filteredStreets);
             }
           }
         },
@@ -302,7 +321,13 @@ const YerevanStreetGame = () => {
         {selectedMode.toUpperCase()} Mode
       </Text>
       <Text>Find: {currentStreet?.name}</Text>
-      <Text>Score: {score}</Text>
+      {selectedMode === "challenge" ? (
+        <Text>
+          Progress: {score}/{streetCount} streets
+        </Text>
+      ) : (
+        <Text>Score: {score}</Text>
+      )}
       {selectedMode === "elimination" && (
         <Text>Remaining Streets: {remainingStreets.length}</Text>
       )}
@@ -337,6 +362,11 @@ const YerevanStreetGame = () => {
           onChange={(e) => setShowStreetNames(e.target.checked)}
         />
         <Text>Show Street Names</Text>
+        <Switch
+          isChecked={showCorrectStreet}
+          onChange={(e) => setShowCorrectStreet(e.target.checked)}
+        />
+        <Text>Show Correct Street on Incorrect Guess</Text>
       </HStack>
       <Button
         onClick={() => {
