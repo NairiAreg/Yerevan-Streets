@@ -13,6 +13,8 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
+  RadioGroup,
+  Radio,
 } from "@chakra-ui/react";
 import {
   MapContainer,
@@ -82,6 +84,8 @@ const YerevanStreetGame = () => {
   const [isToastActive, setIsToastActive] = useState(false);
   const [showCorrectStreet, setShowCorrectStreet] = useState(false);
   const [uniqueStreetCount, setUniqueStreetCount] = useState(0);
+  const [options, setOptions] = useState([]);
+  const [selectedOption, setSelectedOption] = useState("");
 
   const toast = useToast();
   const mapRef = useRef(null);
@@ -141,9 +145,10 @@ const YerevanStreetGame = () => {
     setGameStats(null);
     setIsGameOver(false);
     resetStreetColors();
-    if (selectedMode === "endless") {
+    if (selectedMode === "multiple choice") {
+      selectNewStreetMultipleChoice(filteredStreets);
+    } else if (selectedMode === "endless") {
       selectNewStreet(filteredStreets);
-      setUniqueStreetCount(new Set(filteredStreets.map((s) => s.name)).size);
     } else if (selectedMode === "challenge") {
       const shuffled = [...filteredStreets].sort(() => 0.5 - Math.random());
       const uniqueShuffled = Array.from(
@@ -161,6 +166,63 @@ const YerevanStreetGame = () => {
       setUniqueStreetCount(uniqueStreets.length);
       selectNewStreet(uniqueStreets);
     }
+  };
+  const selectNewStreetMultipleChoice = (streetList) => {
+    if (streetList.length === 0) {
+      endGame();
+      return;
+    }
+    const correctStreet =
+      streetList[Math.floor(Math.random() * streetList.length)];
+    setCurrentStreet(correctStreet);
+    setStreetColor(correctStreet.name, "green");
+
+    // Generate 3 random incorrect options
+    const incorrectOptions = streetList
+      .filter((street) => street.name !== correctStreet.name)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3)
+      .map((street) => street.name);
+
+    // Combine correct and incorrect options, then shuffle
+    const allOptions = [correctStreet.name, ...incorrectOptions].sort(
+      () => 0.5 - Math.random()
+    );
+    setOptions(allOptions);
+    setSelectedOption("");
+  };
+
+  const handleOptionSelect = (value) => {
+    setSelectedOption(value);
+  };
+
+  const handleSubmitAnswer = () => {
+    if (!selectedOption) return;
+
+    const isCorrect = selectedOption === currentStreet.name;
+
+    if (isCorrect) {
+      setScore(score + 1);
+      toast({
+        title: "Correct!",
+        description: `You found ${currentStreet.name}!`,
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } else {
+      toast({
+        title: "Incorrect",
+        description: `The correct street is ${currentStreet.name}.`,
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+
+    // Reset street color and select a new street
+    setStreetColor(currentStreet.name, "blue");
+    selectNewStreetMultipleChoice(filteredStreets);
   };
 
   const selectNewStreet = (streetList) => {
@@ -339,16 +401,37 @@ const YerevanStreetGame = () => {
         Yerevan Street Game - {selectedLevel.toUpperCase()} Level -{" "}
         {selectedMode.toUpperCase()} Mode
       </Text>
-      <Text>Find: {currentStreet?.name}</Text>
-      {selectedMode === "challenge" ? (
-        <Text>
-          Progress: {score}/{streetCount} streets
-        </Text>
+      {selectedMode === "multiple choice" ? (
+        <>
+          <Text>Score: {score}</Text>
+          <Text>Select the correct street name:</Text>
+          <RadioGroup onChange={handleOptionSelect} value={selectedOption}>
+            <VStack align="start">
+              {options.map((option) => (
+                <Radio key={option} value={option}>
+                  {option}
+                </Radio>
+              ))}
+            </VStack>
+          </RadioGroup>
+          <Button onClick={handleSubmitAnswer} isDisabled={!selectedOption}>
+            Submit Answer
+          </Button>
+        </>
       ) : (
-        <Text>Score: {score}</Text>
-      )}
-      {selectedMode === "elimination" && (
-        <Text>Remaining Unique Streets: {remainingStreets.length}</Text>
+        <>
+          <Text>Find: {currentStreet?.name}</Text>
+          {selectedMode === "challenge" ? (
+            <Text>
+              Progress: {score}/{streetCount} streets
+            </Text>
+          ) : (
+            <Text>Score: {score}</Text>
+          )}
+          {selectedMode === "elimination" && (
+            <Text>Remaining Unique Streets: {remainingStreets.length}</Text>
+          )}
+        </>
       )}
       <Box width="100%" height="70vh">
         <MapContainer
@@ -358,11 +441,12 @@ const YerevanStreetGame = () => {
           ref={mapRef}
         >
           <MapTileLayer />
-          <MapEvents
-            onMapClick={handleMapClick}
-            isToastActive={isToastActive}
-          />
-          {marker && <Marker position={marker} />}
+          {selectedMode !== "multiple choice" && (
+            <MapEvents
+              onMapClick={handleMapClick}
+              isToastActive={isToastActive}
+            />
+          )}
           {filteredStreets.map((street) => (
             <Polyline
               key={street.uniqueId}
@@ -381,11 +465,15 @@ const YerevanStreetGame = () => {
           onChange={(e) => setShowStreetNames(e.target.checked)}
         />
         <Text>Show Street Names</Text>
-        <Switch
-          isChecked={showCorrectStreet}
-          onChange={(e) => setShowCorrectStreet(e.target.checked)}
-        />
-        <Text>Show Correct Street on Incorrect Guess</Text>
+        {selectedMode !== "multiple choice" && (
+          <>
+            <Switch
+              isChecked={showCorrectStreet}
+              onChange={(e) => setShowCorrectStreet(e.target.checked)}
+            />
+            <Text>Show Correct Street on Incorrect Guess</Text>
+          </>
+        )}
       </HStack>
       <Button
         onClick={() => {
