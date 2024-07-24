@@ -80,9 +80,11 @@ const YerevanStreetGame = () => {
   const [gameStats, setGameStats] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isToastActive, setIsToastActive] = useState(false);
+  const [showCorrectStreet, setShowCorrectStreet] = useState(false);
+  const [uniqueStreetCount, setUniqueStreetCount] = useState(0);
+
   const toast = useToast();
   const mapRef = useRef(null);
-  const [showCorrectStreet, setShowCorrectStreet] = useState(false);
 
   const filteredStreets = useMemo(() => {
     let streetList = streets;
@@ -104,7 +106,7 @@ const YerevanStreetGame = () => {
       );
     }
 
-    return streetList
+    const filteredList = streetList
       .filter(
         ({ name }) =>
           (name.toLowerCase().includes("street") ||
@@ -118,6 +120,14 @@ const YerevanStreetGame = () => {
         ...street,
         uniqueId: `${street.name}-${index}`,
       }));
+
+    // Calculate unique street count
+    const uniqueNames = new Set(
+      filteredList.map((street) => street.name.toLowerCase())
+    );
+    setUniqueStreetCount(uniqueNames.size);
+
+    return filteredList;
   }, [selectedLevel]);
 
   useEffect(() => {
@@ -133,13 +143,23 @@ const YerevanStreetGame = () => {
     resetStreetColors();
     if (selectedMode === "endless") {
       selectNewStreet(filteredStreets);
+      setUniqueStreetCount(new Set(filteredStreets.map((s) => s.name)).size);
     } else if (selectedMode === "challenge") {
       const shuffled = [...filteredStreets].sort(() => 0.5 - Math.random());
-      setRemainingStreets(shuffled.slice(0, streetCount));
-      selectNewStreet(shuffled.slice(0, streetCount));
+      const uniqueShuffled = Array.from(
+        new Set(shuffled.map((s) => s.name))
+      ).map((name) => shuffled.find((s) => s.name === name));
+      const selectedStreets = uniqueShuffled.slice(0, streetCount);
+      setRemainingStreets(selectedStreets);
+      setUniqueStreetCount(selectedStreets.length);
+      selectNewStreet(selectedStreets);
     } else if (selectedMode === "elimination") {
-      setRemainingStreets([...filteredStreets]);
-      selectNewStreet(filteredStreets);
+      const uniqueStreets = Array.from(
+        new Set(filteredStreets.map((s) => s.name))
+      ).map((name) => filteredStreets.find((s) => s.name === name));
+      setRemainingStreets(uniqueStreets);
+      setUniqueStreetCount(uniqueStreets.length);
+      selectNewStreet(uniqueStreets);
     }
   };
 
@@ -216,9 +236,7 @@ const YerevanStreetGame = () => {
     } else {
       toast({
         title: "Incorrect",
-        description: `That's ${clickedStreet.name}. The correct street is ${
-          currentStreet.name
-        }. ${
+        description: `That's ${clickedStreet.name}.${
           showCorrectStreet ? "The correct street is highlighted in green." : ""
         }`,
         status: "error",
@@ -262,7 +280,8 @@ const YerevanStreetGame = () => {
   };
 
   const endGame = () => {
-    const totalStreets = filteredStreets.length;
+    const totalStreets =
+      selectedMode === "challenge" ? streetCount : uniqueStreetCount;
     const percentCorrect = (score / totalStreets) * 100;
     setGameStats({
       totalStreets,
@@ -329,7 +348,7 @@ const YerevanStreetGame = () => {
         <Text>Score: {score}</Text>
       )}
       {selectedMode === "elimination" && (
-        <Text>Remaining Streets: {remainingStreets.length}</Text>
+        <Text>Remaining Unique Streets: {remainingStreets.length}</Text>
       )}
       <Box width="100%" height="70vh">
         <MapContainer
@@ -383,7 +402,7 @@ const YerevanStreetGame = () => {
           <ModalHeader>Game Over</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>Total Streets: {gameStats?.totalStreets}</Text>
+            <Text>Total Unique Streets: {gameStats?.totalStreets}</Text>
             <Text>Correct Guesses: {gameStats?.correctGuesses}</Text>
             <Text>Accuracy: {gameStats?.percentCorrect}%</Text>
             <Button mt={4} onClick={initializeGame}>
